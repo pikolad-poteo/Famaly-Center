@@ -1,0 +1,126 @@
+<%- include('layout', {
+  user: user,
+  body: `
+    <h2>Категории</h2>
+
+    <section>
+      <h3>Добавить категорию</h3>
+      <form method="POST" action="/categories">
+        <label>Название:<br>
+          <input type="text" name="name" required>
+        </label><br><br>
+
+        <label>Тип:<br>
+          <select name="type">
+            <option value="expense">Расход</option>
+            <option value="income">Доход</option>
+          </select>
+        </label><br><br>
+
+        <label>Цвет:<br>
+          <input type="color" name="color" value="#cccccc">
+        </label><br><br>
+
+        <button type="submit">Добавить</button>
+      </form>
+    </section>
+
+    <section>
+      <h3>Список категорий</h3>
+
+      <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Тип</th>
+            <th>Цвет</th>
+            <th>Семейная?</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${categories.map(c => `
+            <tr id="row-${c.id}">
+              <td>${c.id}</td>
+
+              <!-- Показываем форму редактирования ИЛИ обычный текст -->
+              <td id="name-${c.id}">${c.name}</td>
+              <td id="type-${c.id}">${c.type === 'expense' ? 'Расход' : 'Доход'}</td>
+              <td id="color-${c.id}">
+                <span style="display:inline-block;width:20px;height:20px;background:${c.color};"></span>
+              </td>
+
+              <td>${c.family_id ? 'Своя' : 'Общая'}</td>
+
+              <td>
+                <button onclick="editCategory(${c.id}, '${c.name}', '${c.type}', '${c.color}')">
+                  Редактировать
+                </button>
+
+                ${c.family_id ? `
+                  <form method="POST" action="/categories/delete"
+                        style="display:inline;"
+                        onsubmit="return confirm('Удалить категорию &quot;${c.name}&quot;?');">
+                    <input type="hidden" name="id" value="${c.id}">
+                    <button type="submit">Удалить</button>
+                  </form>
+                ` : `
+                  <!-- общие удалять нельзя -->
+                `}
+              </td>
+            </tr>
+
+            <!-- скрытая строка — форма обновления -->
+            <tr id="edit-${c.id}" style="display:none; background:#eef;">
+              <td colspan="6">
+                <form method="POST" action="/categories/update">
+                  <input type="hidden" name="id" value="${c.id}">
+
+                  <label>Название:
+                    <input type="text" name="name" id="edit-name-${c.id}" required>
+                  </label>
+
+                  <label>Тип:
+                    <select name="type" id="edit-type-${c.id}">
+                      <option value="expense">Расход</option>
+                      <option value="income">Доход</option>
+                    </select>
+                  </label>
+
+                  <label>Цвет:
+                    <input type="color" name="color" id="edit-color-${c.id}">
+                  </label>
+
+                  <button type="submit">Сохранить</button>
+                  <button type="button" onclick="cancelEdit(${c.id})">Отмена</button>
+                </form>
+              </td>
+            </tr>
+
+          `).join('')}
+        </tbody>
+      </table>
+    </section>
+
+    <script>
+      function editCategory(id, name, type, color) {
+        // скрываем обычную строку
+        document.getElementById('row-' + id).style.display = 'none';
+
+        // показываем форму редактирования
+        document.getElementById('edit-' + id).style.display = 'table-row';
+
+        // заполняем поля
+        document.getElementById('edit-name-' + id).value = name;
+        document.getElementById('edit-type-' + id).value = type;
+        document.getElementById('edit-color-' + id).value = color;
+      }
+
+      function cancelEdit(id) {
+        document.getElementById('row-' + id).style.display = '';
+        document.getElementById('edit-' + id).style.display = 'none';
+      }
+    </script>
+  `
+}) %>

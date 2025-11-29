@@ -214,28 +214,138 @@ app.post('/transactions', requireLogin, async (req, res) => {
   const familyId = await getUserFamilyId(userId);
   const accountId = await getFamilyMainAccountId(familyId);
 
-  const { date, amount, category_id, description, type } = req.body;
+  const { date, amount, category_id, description, type, who } = req.body;
 
   let value = parseFloat(amount);
   if (type === 'expense' && value > 0) {
     value = -value;
   }
 
+  const whoValue =
+    who === 'me' || who === 'girlfriend' || who === 'shared'
+      ? who
+      : 'shared';
+
   await pool.execute(
     `
     INSERT INTO transactions
-      (family_id, account_id, user_id, category_id, amount, date, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+      (family_id, account_id, user_id, category_id, amount, date, description, who)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `,
-    [familyId, accountId, userId, category_id, value, date, description || null]
+    [familyId, accountId, userId, category_id, value, date, description || null, whoValue]
   );
 
   res.redirect('/transactions');
 });
 
-// =====================================
+
+
+// ============ КАТЕГОРИИ ============
+
+// Страница категорий
+app.get('/categories', requireLogin, async (req, res) => {
+  const user = req.user;
+  const userId = user.id;
+
+  const familyId = await getUserFamilyId(userId);
+
+  // Берём общие категории (family_id IS NULL) и категории этой семьи
+  const [rows] = await pool.execute(
+    `
+    SELECT *
+    FROM categories
+    WHERE family_id IS NULL OR family_id = ?
+    ORDER BY type DESC, name ASC
+    `,
+    [familyId]
+  );
+
+  res.render('categories', {
+    user,
+    categories: rows,
+    message: null,
+  });
+});
+
+// Добавление новой категории
+app.post('/categories', requireLogin, async (req, res) => {
+  const user = req.user;
+  const userId = user.id;
+  const familyId = await getUserFamilyId(userId);
+
+  let { name, type, color } = req.body;
+
+  name = (name || '').trim();
+  type = type === 'income' ? 'income' : 'expense';
+  color = color || '#cccccc';
+
+  if (!name) {
+    // Можно сделать отображение ошибки, но пока просто редирект
+    return res.redirect('/categories');
+  }
+
+  await pool.execute(
+    `
+    INSERT INTO categories (family_id, name, type, color)
+    VALUES (?, ?, ?, ?)
+    `,
+    [familyId, name, type, color]
+  );
+
+  res.redirect('/categories');
+});
+
+// Обновление категории (Только своих)
+app.post('/categories/update', requireLogin, async (req, res) => {
+  const { id, name, type, color } = req.body;
+
+  if (!id) {
+    return res.redirect('/categories');
+  }
+
+  await pool.execute(
+    `
+    UPDATE categories
+    SET name = ?, type = ?, color = ?
+    WHERE id = ?
+    `,
+    [
+      name.trim(),
+      type === 'income' ? 'income' : 'expense',
+      color || '#cccccc',
+      id
+    ]
+  );
+
+  res.redirect('/categories');
+});
+
+
+// Удаление категории (Только своих)
+app.post('/categories/delete', requireLogin, async (req, res) => {
+  const user = req.user;
+  const userId = user.id;
+  const familyId = await getUserFamilyId(userId);
+
+  const { id } = req.body;
+  if (!id) return res.redirect('/categories');
+
+  // Удаляем только категории семьи (общие с family_id NULL не трогаем)
+  await pool.execute(
+    `
+    DELETE FROM categories
+    WHERE id = ? AND family_id = ?
+    `,
+    [id, familyId]
+  );
+
+  res.redirect('/categories');
+});
+
+// ============ КОНЕЦ КАТЕГОРИЙ ============
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Сервер доступен по адресу -> http://localhost:${PORT}`);
-})
+});

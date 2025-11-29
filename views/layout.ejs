@@ -10,12 +10,13 @@
   <h1>Family Budget</h1>
     <nav>
         <% if (user) { %>
-        <a href="/">Дашборд</a>
-        <a href="/transactions">Транзакции</a>
-        <a href="/logout">Выход (<%= user.email %>)</a>
+            <a href="/">Дашборд</a>
+            <a href="/transactions">Транзакции</a>
+            <a href="/categories">Категории</a>
+            <a href="/logout">Выход (<%= user.email %>)</a>
         <% } else { %>
-        <a href="/login">Вход</a>
-        <a href="/register">Регистрация</a>
+            <a href="/login">Вход</a>
+            <a href="/register">Регистрация</a>
         <% } %>
     </nav>
   <hr>

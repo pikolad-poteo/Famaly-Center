@@ -4,38 +4,47 @@
     <h2>Транзакции</h2>
 
     <section>
-      <h3>Добавить транзакцию</h3>
-      <form method="POST" action="/transactions">
-        <label>Дата:<br>
-          <input type="date" name="date" value="${new Date().toISOString().slice(0,10)}" required>
-        </label><br><br>
+        <h3>Добавить транзакцию</h3>
+        <form method="POST" action="/transactions">
+            <label>Дата:<br>
+            <input type="date" name="date" value="${new Date().toISOString().slice(0,10)}" required>
+            </label><br><br>
 
-        <label>Тип:<br>
-          <select name="type">
-            <option value="expense">Расход</option>
-            <option value="income">Доход</option>
-          </select>
-        </label><br><br>
+            <label>Тип:<br>
+            <select name="type">
+                <option value="expense">Расход</option>
+                <option value="income">Доход</option>
+            </select>
+            </label><br><br>
 
-        <label>Сумма (€):<br>
-          <input type="number" step="0.01" name="amount" required>
-        </label><br><br>
+            <label>Кто платил:<br>
+            <select name="who">
+                <option value="me">Я</option>
+                <option value="girlfriend">Девушка</option>
+                <option value="shared">Общая</option>
+            </select>
+            </label><br><br>
 
-        <label>Категория:<br>
-          <select name="category_id" required>
-            ${categories.map(c => `
-              <option value="${c.id}">${c.name}</option>
-            `).join('')}
-          </select>
-        </label><br><br>
+            <label>Сумма (€):<br>
+            <input type="number" step="0.01" name="amount" required>
+            </label><br><br>
 
-        <label>Описание:<br>
-          <input type="text" name="description" placeholder="Комментарий">
-        </label><br><br>
+            <label>Категория:<br>
+            <select name="category_id" required>
+                ${categories.map(c => `
+                <option value="${c.id}">${c.name}</option>
+                `).join('')}
+            </select>
+            </label><br><br>
 
-        <button type="submit">Добавить</button>
-      </form>
-    </section>
+            <label>Описание:<br>
+            <input type="text" name="description" placeholder="Комментарий">
+            </label><br><br>
+
+            <button type="submit">Добавить</button>
+        </form>
+        </section>
+
 
     <section>
       <h3>Фильтры</h3>
@@ -69,22 +78,32 @@
         <table border="1" cellpadding="5" cellspacing="0">
           <thead>
             <tr>
-              <th>Дата</th>
-              <th>Категория</th>
-              <th>Описание</th>
-              <th>Сумма</th>
+                <th>Дата</th>
+                <th>Категория</th>
+                <th>Описание</th>
+                <th>Кто</th>
+                <th>Сумма</th>
             </tr>
-          </thead>
+            </thead>
           <tbody>
             ${transactions.map(t => `
               <tr>
                 <td>${String(t.date).slice(0,10)}</td>
                 <td>${t.category_name}</td>
                 <td>${t.description || ''}</td>
-                <td style="color: ${t.amount < 0 ? 'red' : 'green'};">
-                  ${Number(t.amount).toFixed(2)} €
+                <td>
+                    ${
+                    t.who === 'me'
+                        ? 'Я'
+                        : t.who === 'girlfriend'
+                        ? 'Девушка'
+                        : 'Общая'
+                    }
                 </td>
-              </tr>
+                <td style="color: ${t.amount < 0 ? 'red' : 'green'};">
+                    ${Number(t.amount).toFixed(2)} €
+                </td>
+                </tr>
             `).join('')}
           </tbody>
         </table>
