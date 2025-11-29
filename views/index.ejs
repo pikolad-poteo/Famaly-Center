@@ -1,0 +1,18 @@
+<%- include('layout', {
+  user: user,
+  body: `
+    <h2>Дашборд</h2>
+    <p>Привет, ${user.name || user.email}!</p>
+    <section>
+      <h3>Текущий баланс</h3>
+      <p style="font-size: 24px;">
+        ${Number(balance).toFixed(2)} €
+      </p>
+    </section>
+    <section>
+      <h3>Текущий месяц</h3>
+      <p>Доходы: ${Number(income).toFixed(2)} €</p>
+      <p>Расходы: ${Number(expense).toFixed(2)} €</p>
+    </section>
+  `
+}) %>

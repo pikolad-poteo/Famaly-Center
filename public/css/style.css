@@ -1,0 +1,33 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 15px;
+    background: #f5f5f5;
+}
+
+header h1 {
+    margin-bottom: 5px;
+}
+
+nav a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: #0066cc;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+main {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.05);
+    margin-top: 10px;
+}
+
+section {
+    margin-bottom: 20px;
+}

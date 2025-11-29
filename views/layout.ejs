@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Family Budget</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header>
+  <h1>Family Budget</h1>
+    <nav>
+        <% if (user) { %>
+        <a href="/">Дашборд</a>
+        <a href="/transactions">Транзакции</a>
+        <a href="/logout">Выход (<%= user.email %>)</a>
+        <% } else { %>
+        <a href="/login">Вход</a>
+        <a href="/register">Регистрация</a>
+        <% } %>
+    </nav>
+  <hr>
+</header>
+<main>
+  <%- body %>
+</main>
+<footer>
+  <hr>
+  <p style="font-size: 12px; color: #666;">Family Budget &copy; <%= new Date().getFullYear() %></p>
+</footer>
+<script src="/js/main.js"></script>
+</body>
+</html>
