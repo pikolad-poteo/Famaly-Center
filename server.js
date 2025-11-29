@@ -238,4 +238,4 @@ app.post('/transactions', requireLogin, async (req, res) => {
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Сервер доступен по адресу -> http://localhost:${PORT}`);
-});
+})
