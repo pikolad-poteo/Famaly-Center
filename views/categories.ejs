@@ -1,126 +1,543 @@
+<%
+  // Набор иконок для категорий (около 30 штук)
+  const iconOptions = [
+    { value: 'bi-tag',            label: 'Другое' },
+    { value: 'bi-cart',           label: 'Продукты / покупки' },
+    { value: 'bi-basket',         label: 'Магазин' },
+    { value: 'bi-bag',            label: 'Одежда' },
+    { value: 'bi-cup-hot',        label: 'Кафе / кофе' },
+    { value: 'bi-egg-fried',      label: 'Еда' },
+    { value: 'bi-pizza',          label: 'Фастфуд' },
+    { value: 'bi-ice-cream',      label: 'Десерты' },
+
+    { value: 'bi-house-door',     label: 'Жильё / аренда' },
+    { value: 'bi-building',       label: 'Коммуналка / дом' },
+    { value: 'bi-lightning-charge', label: 'Электричество' },
+    { value: 'bi-droplet',        label: 'Вода' },
+    { value: 'bi-wifi',           label: 'Интернет' },
+
+    { value: 'bi-fuel-pump',      label: 'Топливо' },
+    { value: 'bi-car-front',      label: 'Машина' },
+    { value: 'bi-bus-front',      label: 'Общественный транспорт' },
+    { value: 'bi-bicycle',        label: 'Велосипед' },
+
+    { value: 'bi-heart-pulse',    label: 'Здоровье' },
+    { value: 'bi-capsule-pill',   label: 'Лекарства' },
+
+    { value: 'bi-briefcase',      label: 'Работа' },
+    { value: 'bi-mortarboard',    label: 'Учёба' },
+    { value: 'bi-laptop',         label: 'Техника' },
+
+    { value: 'bi-controller',     label: 'Игры' },
+    { value: 'bi-music-note-beamed', label: 'Музыка' },
+    { value: 'bi-film',           label: 'Кино' },
+    { value: 'bi-gift',           label: 'Подарки' },
+    { value: 'bi-balloon',        label: 'Праздники' },
+
+    { value: 'bi-airplane',       label: 'Путешествия' },
+    { value: 'bi-train-front',    label: 'Поезд' },
+
+    { value: 'bi-credit-card',    label: 'Банк / карта' },
+    { value: 'bi-piggy-bank',     label: 'Сбережения' },
+    { value: 'bi-cash-coin',      label: 'Доход / зарплата' },
+  ];
+
+  const expenseCategories = categories.filter(c => c.type === 'expense');
+  const incomeCategories  = categories.filter(c => c.type === 'income');
+%>
+
 <%- include('layout', {
   user: user,
   body: `
-    <h2>Категории</h2>
+    <div class="row mb-3">
+      <div class="col-12 d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">Категории</h2>
+        <span class="text-muted small">Всего категорий: ${categories.length}</span>
+      </div>
+    </div>
 
-    <section>
-      <h3>Добавить категорию</h3>
-      <form method="POST" action="/categories">
-        <label>Название:<br>
-          <input type="text" name="name" required>
-        </label><br><br>
+    <div class="row">
+      <!-- Блок добавления категории -->
+      <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Добавить категорию</h5>
+            <p class="text-muted small mb-3">
+              Категория будет доступна только вашей семье.
+            </p>
 
-        <label>Тип:<br>
-          <select name="type">
-            <option value="expense">Расход</option>
-            <option value="income">Доход</option>
-          </select>
-        </label><br><br>
+            <form method="POST" action="/categories">
+              <div class="mb-3">
+                <label class="form-label">Название</label>
+                <input type="text" name="name" class="form-control" required>
+              </div>
 
-        <label>Цвет:<br>
-          <input type="color" name="color" value="#cccccc">
-        </label><br><br>
+              <div class="mb-3">
+                <label class="form-label">Тип</label>
+                <select name="type" class="form-select">
+                  <option value="expense">Расход</option>
+                  <option value="income">Доход</option>
+                </select>
+              </div>
 
-        <button type="submit">Добавить</button>
-      </form>
-    </section>
+              <div class="mb-3">
+                <label class="form-label">Цвет</label>
+                <div class="d-flex align-items-center gap-2">
+                  <input
+                    type="color"
+                    name="color"
+                    value="#cccccc"
+                    class="form-control form-control-color"
+                    style="max-width: 60px;"
+                  >
+                  <span class="text-muted small">Используется в диаграммах и плитке</span>
+                </div>
+              </div>
 
-    <section>
-      <h3>Список категорий</h3>
+              <div class="mb-3">
+                <label class="form-label d-flex justify-content-between align-items-center">
+                  <span>Иконка</span>
+                  <span class="text-muted small">выберите стикер</span>
+                </label>
 
-      <table border="1" cellpadding="5" cellspacing="0">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Название</th>
-            <th>Тип</th>
-            <th>Цвет</th>
-            <th>Семейная?</th>
-            <th>Действия</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${categories.map(c => `
-            <tr id="row-${c.id}">
-              <td>${c.id}</td>
+                <input type="hidden" name="icon" id="icon-input-new" value="bi-tag">
 
-              <!-- Показываем форму редактирования ИЛИ обычный текст -->
-              <td id="name-${c.id}">${c.name}</td>
-              <td id="type-${c.id}">${c.type === 'expense' ? 'Расход' : 'Доход'}</td>
-              <td id="color-${c.id}">
-                <span style="display:inline-block;width:20px;height:20px;background:${c.color};"></span>
-              </td>
+                <div id="icon-picker-new" class="icon-picker border rounded-3 p-2">
+                  ${
+                    iconOptions.map(icon => `
+                      <button
+                        type="button"
+                        class="icon-option btn btn-light btn-sm"
+                        data-icon="${icon.value}"
+                        title="${icon.label}"
+                      >
+                        <i class="bi ${icon.value}"></i>
+                        <span class="visually-hidden">${icon.label}</span>
+                      </button>
+                    `).join('')
+                  }
+                </div>
 
-              <td>${c.family_id ? 'Своя' : 'Общая'}</td>
+                <div class="form-text">
+                  Иконка поможет быстрее отличать категории на дашборде.
+                </div>
+              </div>
 
-              <td>
-                <button onclick='editCategory(${c.id}, ${JSON.stringify(c.name)}, ${JSON.stringify(c.type)}, ${JSON.stringify(c.color)})'>
-                  Редактировать
-                </button>
+              <button type="submit" class="btn btn-primary w-100">
+                Добавить категорию
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
 
-                ${c.family_id ? `
-                  <form method="POST" action="/categories/delete"
-                        style="display:inline;"
-                        onsubmit="return confirm('Удалить категорию &quot;${c.name}&quot;?');">
-                    <input type="hidden" name="id" value="${c.id}">
-                    <button type="submit">Удалить</button>
-                  </form>
-                ` : `
-                  <!-- общие удалять нельзя -->
-                `}
-              </td>
-            </tr>
+      <!-- Список категорий -->
+      <div class="col-md-8 mb-4">
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Расходы</h5>
 
-            <!-- скрытая строка — форма обновления -->
-            <tr id="edit-${c.id}" style="display:none; background:#eef;">
-              <td colspan="6">
-                <form method="POST" action="/categories/update">
-                  <input type="hidden" name="id" value="${c.id}">
+            ${
+              expenseCategories.length === 0
+                ? `<p class="text-muted mb-0">Расходных категорий пока нет.</p>`
+                : `
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th class="text-nowrap">ID</th>
+                          <th>Название</th>
+                          <th>Цвет</th>
+                          <th>Иконка</th>
+                          <th class="text-nowrap">Источник</th>
+                          <th class="text-end">Действия</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${
+                          expenseCategories.map(c => `
+                            <tr id="row-${c.id}">
+                              <td class="text-muted small">${c.id}</td>
 
-                  <label>Название:
-                    <input type="text" name="name" id="edit-name-${c.id}" required>
-                  </label>
+                              <td id="name-${c.id}">
+                                ${c.name}
+                              </td>
 
-                  <label>Тип:
-                    <select name="type" id="edit-type-${c.id}">
-                      <option value="expense">Расход</option>
-                      <option value="income">Доход</option>
-                    </select>
-                  </label>
+                              <td id="color-${c.id}">
+                                <span
+                                  class="rounded-circle d-inline-block border"
+                                  style="width:20px;height:20px;background:${c.color || '#cccccc'};"
+                                  title="${c.color || '#cccccc'}"
+                                ></span>
+                              </td>
 
-                  <label>Цвет:
-                    <input type="color" name="color" id="edit-color-${c.id}">
-                  </label>
+                              <td id="icon-${c.id}">
+                                <i class="bi ${c.icon || 'bi-tag'} fs-5"></i>
+                              </td>
 
-                  <button type="submit">Сохранить</button>
-                  <button type="button" onclick="cancelEdit(${c.id})">Отмена</button>
-                </form>
-              </td>
-            </tr>
+                              <td>
+                                ${
+                                  c.family_id
+                                    ? '<span class="badge bg-primary-subtle text-primary">Своя</span>'
+                                    : '<span class="badge bg-secondary-subtle text-secondary">Общая</span>'
+                                }
+                              </td>
 
-          `).join('')}
-        </tbody>
-      </table>
-    </section>
+                              <td class="text-end text-nowrap">
+                                <button
+                                  type="button"
+                                  class="btn btn-outline-secondary btn-sm me-1"
+                                  onclick='editCategory(${c.id}, ${JSON.stringify(c.name)}, "expense", ${JSON.stringify(c.color)}, ${JSON.stringify(c.icon)})'
+                                >
+                                  Редактировать
+                                </button>
+
+                                ${
+                                  c.family_id
+                                    ? `
+                                      <form method="POST" action="/categories/delete"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Удалить категорию &quot;${c.name}&quot;? Все транзакции с этой категорией останутся без изменений.');">
+                                        <input type="hidden" name="id" value="${c.id}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                          Удалить
+                                        </button>
+                                      </form>
+                                    `
+                                    : ``
+                                }
+                              </td>
+                            </tr>
+
+                            <!-- Строка с формой редактирования -->
+                            <tr id="edit-${c.id}" style="display:none;" class="table-active">
+                              <td colspan="6">
+                                <form method="POST" action="/categories/update" class="row g-2 align-items-end">
+                                  <input type="hidden" name="id" value="${c.id}">
+
+                                  <div class="col-md-3">
+                                    <label class="form-label mb-1">Название</label>
+                                    <input
+                                      type="text"
+                                      name="name"
+                                      id="edit-name-${c.id}"
+                                      class="form-control form-control-sm"
+                                      required
+                                    >
+                                  </div>
+
+                                  <div class="col-md-2">
+                                    <label class="form-label mb-1">Тип</label>
+                                    <select
+                                      name="type"
+                                      id="edit-type-${c.id}"
+                                      class="form-select form-select-sm"
+                                    >
+                                      <option value="expense">Расход</option>
+                                      <option value="income">Доход</option>
+                                    </select>
+                                  </div>
+
+                                  <div class="col-md-2">
+                                    <label class="form-label mb-1">Цвет</label>
+                                    <input
+                                      type="color"
+                                      name="color"
+                                      id="edit-color-${c.id}"
+                                      class="form-control form-control-color form-control-sm"
+                                      style="max-width: 60px;"
+                                    >
+                                  </div>
+
+                                  <div class="col-md-3">
+                                    <label class="form-label mb-1">Иконка</label>
+
+                                    <input
+                                      type="hidden"
+                                      name="icon"
+                                      id="icon-input-${c.id}"
+                                      value="${c.icon || 'bi-tag'}"
+                                    >
+
+                                    <div id="icon-picker-${c.id}" class="icon-picker border rounded-3 p-2">
+                                      ${
+                                        iconOptions.map(icon => `
+                                          <button
+                                            type="button"
+                                            class="icon-option btn btn-light btn-sm"
+                                            data-icon="${icon.value}"
+                                            title="${icon.label}"
+                                          >
+                                            <i class="bi ${icon.value}"></i>
+                                            <span class="visually-hidden">${icon.label}</span>
+                                          </button>
+                                        `).join('')
+                                      }
+                                    </div>
+                                  </div>
+
+                                  <div class="col-md-2 text-end">
+                                    <button type="submit" class="btn btn-success btn-sm me-1">
+                                      Сохранить
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="btn btn-outline-secondary btn-sm"
+                                      onclick="cancelEdit(${c.id})"
+                                    >
+                                      Отмена
+                                    </button>
+                                  </div>
+                                </form>
+                              </td>
+                            </tr>
+                          `).join('')
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                `
+            }
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Доходы</h5>
+
+            ${
+              incomeCategories.length === 0
+                ? `<p class="text-muted mb-0">Доходных категорий пока нет.</p>`
+                : `
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th class="text-nowrap">ID</th>
+                          <th>Название</th>
+                          <th>Цвет</th>
+                          <th>Иконка</th>
+                          <th class="text-nowrap">Источник</th>
+                          <th class="text-end">Действия</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${
+                          incomeCategories.map(c => `
+                            <tr id="row-${c.id}">
+                              <td class="text-muted small">${c.id}</td>
+
+                              <td id="name-${c.id}">
+                                ${c.name}
+                              </td>
+
+                              <td id="color-${c.id}">
+                                <span
+                                  class="rounded-circle d-inline-block border"
+                                  style="width:20px;height:20px;background:${c.color || '#cccccc'};"
+                                  title="${c.color || '#cccccc'}"
+                                ></span>
+                              </td>
+
+                              <td id="icon-${c.id}">
+                                <i class="bi ${c.icon || 'bi-tag'} fs-5"></i>
+                              </td>
+
+                              <td>
+                                ${
+                                  c.family_id
+                                    ? '<span class="badge bg-primary-subtle text-primary">Своя</span>'
+                                    : '<span class="badge bg-secondary-subtle text-secondary">Общая</span>'
+                                }
+                              </td>
+
+                              <td class="text-end text-nowrap">
+                                <button
+                                  type="button"
+                                  class="btn btn-outline-secondary btn-sm me-1"
+                                  onclick='editCategory(${c.id}, ${JSON.stringify(c.name)}, "income", ${JSON.stringify(c.color)}, ${JSON.stringify(c.icon)})'
+                                >
+                                  Редактировать
+                                </button>
+
+                                ${
+                                  c.family_id
+                                    ? `
+                                      <form method="POST" action="/categories/delete"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Удалить категорию &quot;${c.name}&quot;? Все транзакции с этой категорией останутся без изменений.');">
+                                        <input type="hidden" name="id" value="${c.id}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                          Удалить
+                                        </button>
+                                      </form>
+                                    `
+                                    : ``
+                                }
+                              </td>
+                            </tr>
+
+                            <!-- Строка с формой редактирования -->
+                            <tr id="edit-${c.id}" style="display:none;" class="table-active">
+                              <td colspan="6">
+                                <form method="POST" action="/categories/update" class="row g-2 align-items-end">
+                                  <input type="hidden" name="id" value="${c.id}">
+
+                                  <div class="col-md-3">
+                                    <label class="form-label mb-1">Название</label>
+                                    <input
+                                      type="text"
+                                      name="name"
+                                      id="edit-name-${c.id}"
+                                      class="form-control form-control-sm"
+                                      required
+                                    >
+                                  </div>
+
+                                  <div class="col-md-2">
+                                    <label class="form-label mb-1">Тип</label>
+                                    <select
+                                      name="type"
+                                      id="edit-type-${c.id}"
+                                      class="form-select form-select-sm"
+                                    >
+                                      <option value="expense">Расход</option>
+                                      <option value="income">Доход</option>
+                                    </select>
+                                  </div>
+
+                                  <div class="col-md-2">
+                                    <label class="form-label mb-1">Цвет</label>
+                                    <input
+                                      type="color"
+                                      name="color"
+                                      id="edit-color-${c.id}"
+                                      class="form-control form-control-color form-control-sm"
+                                      style="max-width: 60px;"
+                                    >
+                                  </div>
+
+                                  <div class="col-md-3">
+                                    <label class="form-label mb-1">Иконка</label>
+
+                                    <input
+                                      type="hidden"
+                                      name="icon"
+                                      id="icon-input-${c.id}"
+                                      value="${c.icon || 'bi-tag'}"
+                                    >
+
+                                    <div id="icon-picker-${c.id}" class="icon-picker border rounded-3 p-2">
+                                      ${
+                                        iconOptions.map(icon => `
+                                          <button
+                                            type="button"
+                                            class="icon-option btn btn-light btn-sm"
+                                            data-icon="${icon.value}"
+                                            title="${icon.label}"
+                                          >
+                                            <i class="bi ${icon.value}"></i>
+                                            <span class="visually-hidden">${icon.label}</span>
+                                          </button>
+                                        `).join('')
+                                      }
+                                    </div>
+                                  </div>
+
+                                  <div class="col-md-2 text-end">
+                                    <button type="submit" class="btn btn-success btn-sm me-1">
+                                      Сохранить
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="btn btn-outline-secondary btn-sm"
+                                      onclick="cancelEdit(${c.id})"
+                                    >
+                                      Отмена
+                                    </button>
+                                  </div>
+                                </form>
+                              </td>
+                            </tr>
+                          `).join('')
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                `
+            }
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script>
-      function editCategory(id, name, type, color) {
-        // скрываем обычную строку
-        document.getElementById('row-' + id).style.display = 'none';
+      function editCategory(id, name, type, color, icon) {
+        const row = document.getElementById('row-' + id);
+        const editRow = document.getElementById('edit-' + id);
+        if (!row || !editRow) return;
 
-        // показываем форму редактирования
-        document.getElementById('edit-' + id).style.display = 'table-row';
+        row.style.display = 'none';
+        editRow.style.display = 'table-row';
 
-        // заполняем поля
-        document.getElementById('edit-name-' + id).value = name;
-        document.getElementById('edit-type-' + id).value = type;
-        document.getElementById('edit-color-' + id).value = color;
+        const nameInput = document.getElementById('edit-name-' + id);
+        const typeSelect = document.getElementById('edit-type-' + id);
+        const colorInput = document.getElementById('edit-color-' + id);
+        const iconInput  = document.getElementById('icon-input-' + id);
+
+        if (nameInput) nameInput.value = name || '';
+        if (typeSelect) typeSelect.value = type || 'expense';
+        if (colorInput) colorInput.value = color || '#cccccc';
+        if (iconInput)  iconInput.value  = icon || 'bi-tag';
+
+        initIconPicker('icon-picker-' + id, 'icon-input-' + id, iconInput.value);
       }
 
       function cancelEdit(id) {
-        document.getElementById('row-' + id).style.display = '';
-        document.getElementById('edit-' + id).style.display = 'none';
+        const row = document.getElementById('row-' + id);
+        const editRow = document.getElementById('edit-' + id);
+        if (!row || !editRow) return;
+
+        row.style.display = '';
+        editRow.style.display = 'none';
       }
+
+      function initIconPicker(pickerId, inputId, initialValue) {
+        const picker = document.getElementById(pickerId);
+        const input  = document.getElementById(inputId);
+        if (!picker || !input) return;
+
+        function setActive(iconClass) {
+          input.value = iconClass;
+          const buttons = picker.querySelectorAll('.icon-option');
+          buttons.forEach(btn => {
+            if (btn.getAttribute('data-icon') === iconClass) {
+              btn.classList.add('icon-option-active');
+            } else {
+              btn.classList.remove('icon-option-active');
+            }
+          });
+        }
+
+        picker.addEventListener('click', function(e) {
+          const btn = e.target.closest('.icon-option');
+          if (!btn) return;
+          const iconClass = btn.getAttribute('data-icon');
+          setActive(iconClass);
+        });
+
+        setActive(initialValue || input.value || 'bi-tag');
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        // Новый категория
+        initIconPicker('icon-picker-new', 'icon-input-new', document.getElementById('icon-input-new')?.value);
+
+        // Существующие категории (для форм редактирования)
+        ${categories.map(c => `
+          initIconPicker('icon-picker-${c.id}', 'icon-input-${c.id}', '${(c.icon || 'bi-tag').replace(/'/g, "\\'")}');
+        `).join('')}
+      });
     </script>
   `
 }) %>

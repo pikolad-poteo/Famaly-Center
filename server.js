@@ -33,7 +33,6 @@ app.use(attachUser);
 // ================== РОУТЫ ==================
 
 // Дашборд
-// Дашборд
 app.get('/', requireLogin, async (req, res) => {
   const user = req.user;
   const userId = user.id;
@@ -93,10 +92,12 @@ app.get('/', requireLogin, async (req, res) => {
   const expense = expRows[0].expense; // это отрицательное число
 
   // расходы по категориям (делаем суммы положительными через -amount)
-  const [catRows] = await pool.execute(
+    const [catRows] = await pool.execute(
     `
     SELECT
       c.name AS category_name,
+      c.color,
+      c.icon,
       COALESCE(SUM(-t.amount), 0) AS total_spent
     FROM transactions t
     JOIN categories c ON c.id = t.category_id
@@ -104,7 +105,7 @@ app.get('/', requireLogin, async (req, res) => {
       AND t.account_id = ?
       AND t.amount < 0
       AND t.date BETWEEN ? AND ?
-    GROUP BY c.id, c.name
+    GROUP BY c.id, c.name, c.color, c.icon
     ORDER BY total_spent DESC
     `,
     [familyId, accountId, fromStr, toStr]
@@ -113,6 +114,8 @@ app.get('/', requireLogin, async (req, res) => {
   const categoriesSummaryRaw = catRows.map(row => ({
     name: row.category_name,
     total: Number(row.total_spent || 0),
+    color: row.color || '#cccccc',
+    icon: row.icon || 'bi-tag',
   }));
 
   const totalExpensesAbs = categoriesSummaryRaw.reduce(
@@ -120,12 +123,14 @@ app.get('/', requireLogin, async (req, res) => {
     0
   );
 
-  const categoriesSummary = categoriesSummaryRaw.map(row => ({
+    const categoriesSummary = categoriesSummaryRaw.map(row => ({
     name: row.name,
     total: row.total,
+    color: row.color,
+    icon: row.icon,
     percent:
       totalExpensesAbs > 0
-        ? Math.round((row.total / totalExpensesAbs) * 1000) / 10 // округляем до 0.1%
+        ? Math.round((row.total / totalExpensesAbs) * 1000) / 10
         : 0,
   }));
 
@@ -217,13 +222,13 @@ app.get('/transactions', requireLogin, async (req, res) => {
 
   // транзакции
   let query = `
-    SELECT t.*, c.name AS category_name
-    FROM transactions t
-    JOIN categories c ON c.id = t.category_id
-    WHERE t.family_id = ?
-      AND t.account_id = ?
-      AND t.date BETWEEN ? AND ?
-  `;
+  SELECT t.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon
+  FROM transactions t
+  JOIN categories c ON c.id = t.category_id
+  WHERE t.family_id = ?
+    AND t.account_id = ?
+    AND t.date BETWEEN ? AND ?
+`;
   const params = [familyId, accountId, fromDate, toDate];
 
   if (category_id && category_id !== 'all') {
@@ -314,48 +319,95 @@ app.post('/categories', requireLogin, async (req, res) => {
   const userId = user.id;
   const familyId = await getUserFamilyId(userId);
 
-  let { name, type, color } = req.body;
+  let { name, type, color, icon } = req.body;
 
   name = (name || '').trim();
   type = type === 'income' ? 'income' : 'expense';
   color = color || '#cccccc';
+  icon = icon || 'bi-tag';
 
   if (!name) {
-    // Можно сделать отображение ошибки, но пока просто редирект
+    return res.redirect('/categories');
+  }
+
+  // 🔒 Проверяем, есть ли уже ТАКАЯ категория (имя+тип) либо общая, либо семейная
+  const [existing] = await pool.execute(
+    `
+    SELECT id
+    FROM categories
+    WHERE (family_id IS NULL OR family_id = ?)
+      AND name = ?
+      AND type = ?
+    LIMIT 1
+    `,
+    [familyId, name, type]
+  );
+
+  if (existing.length > 0) {
+    // Категория уже есть (либо базовая, либо своя) — просто не создаём вторую
+    // Можно потом добавить сообщение пользователю, пока просто редирект
     return res.redirect('/categories');
   }
 
   await pool.execute(
     `
-    INSERT INTO categories (family_id, name, type, color)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO categories (family_id, name, type, color, icon)
+    VALUES (?, ?, ?, ?, ?)
     `,
-    [familyId, name, type, color]
+    [familyId, name, type, color, icon]
   );
 
   res.redirect('/categories');
 });
 
+
 // Обновление категории (Только своих)
 app.post('/categories/update', requireLogin, async (req, res) => {
-  const { id, name, type, color } = req.body;
+  const user = req.user;
+  const userId = user.id;
+  const familyId = await getUserFamilyId(userId);
+
+  let { id, name, type, color, icon } = req.body;
 
   if (!id) {
+    return res.redirect('/categories');
+  }
+
+  name = (name || '').trim();
+  type = type === 'income' ? 'income' : 'expense';
+  color = color || '#cccccc';
+  icon = icon || 'bi-tag';
+
+  if (!name) {
+    return res.redirect('/categories');
+  }
+
+  // 🔒 Проверяем, не превращаем ли мы эту категорию в дубль другой
+  const [existing] = await pool.execute(
+    `
+    SELECT id
+    FROM categories
+    WHERE (family_id IS NULL OR family_id = ?)
+      AND name = ?
+      AND type = ?
+      AND id <> ?
+    LIMIT 1
+    `,
+    [familyId, name, type, id]
+  );
+
+  if (existing.length > 0) {
+    // Уже есть другая категория с таким же именем+типом
     return res.redirect('/categories');
   }
 
   await pool.execute(
     `
     UPDATE categories
-    SET name = ?, type = ?, color = ?
+    SET name = ?, type = ?, color = ?, icon = ?
     WHERE id = ?
     `,
-    [
-      name.trim(),
-      type === 'income' ? 'income' : 'expense',
-      color || '#cccccc',
-      id
-    ]
+    [name, type, color, icon, id]
   );
 
   res.redirect('/categories');
@@ -371,19 +423,70 @@ app.post('/categories/delete', requireLogin, async (req, res) => {
   const { id } = req.body;
   if (!id) return res.redirect('/categories');
 
-  // Удаляем только категории семьи (общие с family_id NULL не трогаем)
-  await pool.execute(
-    `
-    DELETE FROM categories
-    WHERE id = ? AND family_id = ?
-    `,
-    [id, familyId]
-  );
+  try {
+    // 1) Сначала удаляем все транзакции этой семьи с этой категорией
+    await pool.execute(
+      `
+      DELETE FROM transactions
+      WHERE family_id = ? AND category_id = ?
+      `,
+      [familyId, id]
+    );
 
-  res.redirect('/categories');
+    // 2) Потом удаляем категорию
+    await pool.execute(
+      `
+      DELETE FROM categories
+      WHERE id = ? AND family_id = ?
+      `,
+      [id, familyId]
+    );
+
+    res.redirect('/categories');
+  } catch (err) {
+    console.error('Error deleting category:', err);
+    res.status(500).send('Ошибка при удалении категории.');
+  }
 });
 
+
 // ============ КОНЕЦ КАТЕГОРИЙ ============
+
+
+// ============ ОЧИСТКА ДАННЫХ СЕМЬИ ============
+
+app.post('/reset-data', requireLogin, async (req, res) => {
+  const user = req.user;
+  const userId = user.id;
+
+  const familyId = await getUserFamilyId(userId);
+  if (!familyId) {
+    return res.redirect('/');
+  }
+
+  try {
+    // Сначала удаляем ВСЕ транзакции семьи
+    await pool.execute(
+      'DELETE FROM transactions WHERE family_id = ?',
+      [familyId]
+    );
+
+    // Потом удаляем пользовательские категории семьи
+    await pool.execute(
+      'DELETE FROM categories WHERE family_id = ?',
+      [familyId]
+    );
+
+    // При желании можно сюда же добавить очистку других таблиц, если появятся
+
+    res.redirect('/');
+  } catch (err) {
+    console.error('Error in /reset-data:', err);
+    res.status(500).send('Ошибка при очистке данных.');
+  }
+});
+
+// ==============================================
 
 
 const PORT = 3000;

@@ -1,6 +1,5 @@
 body {
     font-family: Arial, sans-serif;
-    max-width: 900px;
     margin: 0 auto;
     padding: 10px 15px;
     background: #f5f5f5;
@@ -52,4 +51,66 @@ table {
   width: 100%;
 }
 
-/* Можно что-то своё ещё сюда докидывать позже */
+.icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.icon-option {
+  border-radius: 0.75rem;
+  padding-inline: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-option i {
+  font-size: 1.1rem;
+}
+
+.icon-option-active {
+  border-color: #0d6efd !important;
+  background-color: rgba(13, 110, 253, 0.12) !important;
+  box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.3);
+}
+
+/* Пикер категорий (для транзакций и фильтров) */
+.category-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.category-option {
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.category-option .category-name {
+  font-size: 0.85rem;
+}
+
+.category-option .category-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.1);
+  display: inline-block;
+  margin-right: 0.25rem;
+}
+
+.category-option-active {
+  border-color: #0d6efd !important;
+  background-color: rgba(13, 110, 253, 0.12) !important;
+  box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.3);
+}
+
+
