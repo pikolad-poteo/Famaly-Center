@@ -1,12 +1,28 @@
 <%- include('layout', {
   user: null,
   body: `
-    <h2>Вход</h2>
-    <form method="POST" action="/login">
-      <input type="email" name="email" placeholder="Email" required><br>
-      <input type="password" name="password" placeholder="Пароль" required><br>
-      <button type="submit">Войти</button>
-    </form>
-    <p style="color:red;">${message || ''}</p>
+    <div class="row justify-content-center">
+      <div class="col-md-4">
+        <h2 class="mb-3">Вход</h2>
+
+        <form method="POST" action="/login">
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Пароль</label>
+            <input type="password" name="password" class="form-control" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Войти</button>
+
+          ${message ? `
+            <div class="alert alert-danger mt-3">${message}</div>
+          ` : ''}
+        </form>
+      </div>
+    </div>
   `
 }) %>

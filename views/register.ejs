@@ -1,13 +1,33 @@
 <%- include('layout', {
   user: null,
   body: `
-    <h2>Регистрация</h2>
-    <form method="POST" action="/register">
-      <input type="text" name="name" placeholder="Имя" required><br>
-      <input type="email" name="email" placeholder="Email" required><br>
-      <input type="password" name="password" placeholder="Пароль" required><br>
-      <button type="submit">Создать аккаунт</button>
-    </form>
-    <p style="color:red;">${message || ''}</p>
+    <div class="row justify-content-center">
+      <div class="col-md-4">
+        <h2 class="mb-3">Регистрация</h2>
+
+        <form method="POST" action="/register">
+          <div class="mb-3">
+            <label class="form-label">Имя</label>
+            <input type="text" name="name" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Пароль</label>
+            <input type="password" name="password" class="form-control" required>
+          </div>
+
+          <button type="submit" class="btn btn-success w-100">Создать аккаунт</button>
+
+          ${message ? `
+            <div class="alert alert-danger mt-3">${message}</div>
+          ` : ''}
+        </form>
+      </div>
+    </div>
   `
 }) %>

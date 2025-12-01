@@ -31,3 +31,25 @@ main {
 section {
     margin-bottom: 20px;
 }
+
+/* Немного места сверху */
+main {
+  min-height: 70vh;
+}
+
+/* Заголовки страниц */
+h2 {
+  margin-bottom: 1rem;
+}
+
+/* Карточки секций */
+.section-card {
+  margin-bottom: 1.5rem;
+}
+
+/* Таблицы */
+table {
+  width: 100%;
+}
+
+/* Можно что-то своё ещё сюда докидывать позже */

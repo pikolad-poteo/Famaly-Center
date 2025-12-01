@@ -1,18 +1,94 @@
 <%- include('layout', {
   user: user,
   body: `
-    <h2>Дашборд</h2>
-    <p>Привет, ${user.name || user.email}!</p>
-    <section>
-      <h3>Текущий баланс</h3>
-      <p style="font-size: 24px;">
-        ${Number(balance).toFixed(2)} €
-      </p>
-    </section>
-    <section>
-      <h3>Текущий месяц</h3>
-      <p>Доходы: ${Number(income).toFixed(2)} €</p>
-      <p>Расходы: ${Number(expense).toFixed(2)} €</p>
-    </section>
+    <div class="row mb-3">
+      <div class="col-12">
+        <h2>Дашборд</h2>
+        <p class="text-muted">Привет, ${user.name || user.email}!</p>
+      </div>
+    </div>
+
+    <div class="row section-card">
+      <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Текущий баланс</h5>
+            <p class="card-text fs-3">
+              ${Number(balance || 0).toFixed(2)} €
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Доходы (текущий месяц)</h5>
+            <p class="card-text fs-4 text-success">
+              ${Number(income || 0).toFixed(2)} €
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Расходы (текущий месяц)</h5>
+            <p class="card-text fs-4 text-danger">
+              ${Math.abs(Number(expense || 0)).toFixed(2)} €
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row section-card">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Расходы по категориям</h5>
+
+            ${
+              (!categoriesSummary || categoriesSummary.length === 0)
+                ? `<p class="text-muted mb-0">За этот месяц ещё нет расходов.</p>`
+                : `
+                  <p class="mb-2 text-muted">
+                    Общая сумма расходов: <strong>${Number(totalExpensesAbs || 0).toFixed(2)} €</strong>
+                  </p>
+                  <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Категория</th>
+                          <th>Сумма</th>
+                          <th>% от всех расходов</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${
+                          categoriesSummary.map(c => `
+                            <tr>
+                              <td>${c.name}</td>
+                              <td>${c.total.toFixed(2)} €</td>
+                              <td>${c.percent.toFixed(1)}%</td>
+                            </tr>
+                          `).join('')
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                `
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row section-card">
+      <div class="col-12">
+        <a href="/transactions" class="btn btn-primary">Перейти к транзакциям</a>
+      </div>
+    </div>
   `
 }) %>

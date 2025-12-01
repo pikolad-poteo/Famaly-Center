@@ -54,7 +54,7 @@
               <td>${c.family_id ? 'Своя' : 'Общая'}</td>
 
               <td>
-                <button onclick="editCategory(${c.id}, '${c.name}', '${c.type}', '${c.color}')">
+                <button onclick='editCategory(${c.id}, ${JSON.stringify(c.name)}, ${JSON.stringify(c.type)}, ${JSON.stringify(c.color)})'>
                   Редактировать
                 </button>
 

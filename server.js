@@ -33,6 +33,7 @@ app.use(attachUser);
 // ================== РОУТЫ ==================
 
 // Дашборд
+// Дашборд
 app.get('/', requireLogin, async (req, res) => {
   const user = req.user;
   const userId = user.id;
@@ -44,7 +45,7 @@ app.get('/', requireLogin, async (req, res) => {
     return res.send('Не найдены семья или счёт.');
   }
 
-  // Баланс
+  // Баланс (все транзакции по счёту)
   const [balRows] = await pool.execute(
     `
     SELECT COALESCE(SUM(amount), 0) AS balance
@@ -63,7 +64,7 @@ app.get('/', requireLogin, async (req, res) => {
   const fromStr = fromDate.toISOString().slice(0, 10);
   const toStr = toDate.toISOString().slice(0, 10);
 
-  // доходы
+  // доходы за месяц
   const [incRows] = await pool.execute(
     `
     SELECT COALESCE(SUM(amount), 0) AS income
@@ -77,7 +78,7 @@ app.get('/', requireLogin, async (req, res) => {
   );
   const income = incRows[0].income;
 
-  // расходы
+  // расходы за месяц (сумма отрицательных)
   const [expRows] = await pool.execute(
     `
     SELECT COALESCE(SUM(amount), 0) AS expense
@@ -89,15 +90,55 @@ app.get('/', requireLogin, async (req, res) => {
     `,
     [familyId, accountId, fromStr, toStr]
   );
-  const expense = expRows[0].expense;
+  const expense = expRows[0].expense; // это отрицательное число
+
+  // расходы по категориям (делаем суммы положительными через -amount)
+  const [catRows] = await pool.execute(
+    `
+    SELECT
+      c.name AS category_name,
+      COALESCE(SUM(-t.amount), 0) AS total_spent
+    FROM transactions t
+    JOIN categories c ON c.id = t.category_id
+    WHERE t.family_id = ?
+      AND t.account_id = ?
+      AND t.amount < 0
+      AND t.date BETWEEN ? AND ?
+    GROUP BY c.id, c.name
+    ORDER BY total_spent DESC
+    `,
+    [familyId, accountId, fromStr, toStr]
+  );
+
+  const categoriesSummaryRaw = catRows.map(row => ({
+    name: row.category_name,
+    total: Number(row.total_spent || 0),
+  }));
+
+  const totalExpensesAbs = categoriesSummaryRaw.reduce(
+    (sum, row) => sum + row.total,
+    0
+  );
+
+  const categoriesSummary = categoriesSummaryRaw.map(row => ({
+    name: row.name,
+    total: row.total,
+    percent:
+      totalExpensesAbs > 0
+        ? Math.round((row.total / totalExpensesAbs) * 1000) / 10 // округляем до 0.1%
+        : 0,
+  }));
 
   res.render('index', {
     user,
     balance,
     income,
-    expense,
+    expense,             // всё ещё отрицательное, обработаем в шаблоне
+    categoriesSummary,
+    totalExpensesAbs,
   });
 });
+
 
 // Регистрация
 app.get('/register', (req, res) => {
