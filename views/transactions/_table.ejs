@@ -1,0 +1,66 @@
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title">Список транзакций</h5>
+
+    <% if (!transactions || transactions.length === 0) { %>
+      <p class="text-muted mb-0">Транзакций пока нет.</p>
+    <% } else { %>
+      <div class="table-responsive mt-2">
+        <table class="table table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Дата</th>
+              <th>Категория</th>
+              <th>Описание</th>
+              <th>Кто</th>
+              <th class="text-end">Сумма</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% transactions.forEach(t => { %>
+              <tr>
+                <td>
+                  <% if (t.date instanceof Date) { %>
+                    <%= t.date.toISOString().slice(0, 10) %>
+                  <% } else { %>
+                    <%= String(t.date).slice(0, 10) %>
+                  <% } %>
+                </td>
+
+                <td>
+                  <div class="d-flex align-items-center">
+                    <span
+                      class="category-color me-1"
+                      style="background:<%= t.category_color || '#cccccc' %>;"
+                    ></span>
+                    <i class="bi <%= t.category_icon || 'bi-tag' %> me-1"></i>
+                    <span><%= t.category_name %></span>
+                  </div>
+                </td>
+
+                <td><%= t.description || '' %></td>
+
+                <td>
+                  <% if (t.who === 'me') { %>
+                    Я
+                  <% } else if (t.who === 'girlfriend') { %>
+                    Девушка
+                  <% } else { %>
+                    Общая
+                  <% } %>
+                </td>
+
+                <td class="text-end">
+                  <% const isIncome = Number(t.amount) > 0; %>
+                  <span class="badge <%= isIncome ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' %> p-2">
+                    <%= Number(t.amount).toFixed(2) %> €
+                  </span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>

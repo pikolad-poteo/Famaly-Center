@@ -12,7 +12,8 @@ const pool = require('./src/db');
 
 const app = express();
 
-// Настройки
+// ================== НАСТРОЙКИ ==================
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -32,7 +33,7 @@ app.use(attachUser);
 
 // ================== РОУТЫ ==================
 
-// Дашборд
+// ---------- Дашборд ----------
 app.get('/', requireLogin, async (req, res) => {
   const user = req.user;
   const userId = user.id;
@@ -55,7 +56,7 @@ app.get('/', requireLogin, async (req, res) => {
   );
   const balance = balRows[0].balance;
 
-  // текущий месяц
+  // Текущий месяц
   const fromDate = new Date();
   fromDate.setDate(1);
   const toDate = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
@@ -63,7 +64,7 @@ app.get('/', requireLogin, async (req, res) => {
   const fromStr = fromDate.toISOString().slice(0, 10);
   const toStr = toDate.toISOString().slice(0, 10);
 
-  // доходы за месяц
+  // Доходы за месяц
   const [incRows] = await pool.execute(
     `
     SELECT COALESCE(SUM(amount), 0) AS income
@@ -77,7 +78,7 @@ app.get('/', requireLogin, async (req, res) => {
   );
   const income = incRows[0].income;
 
-  // расходы за месяц (сумма отрицательных)
+  // Расходы за месяц (сумма отрицательных)
   const [expRows] = await pool.execute(
     `
     SELECT COALESCE(SUM(amount), 0) AS expense
@@ -91,8 +92,8 @@ app.get('/', requireLogin, async (req, res) => {
   );
   const expense = expRows[0].expense; // это отрицательное число
 
-  // расходы по категориям (делаем суммы положительными через -amount)
-    const [catRows] = await pool.execute(
+  // Расходы по категориям (суммы положительные через -amount)
+  const [catRows] = await pool.execute(
     `
     SELECT
       c.name AS category_name,
@@ -111,7 +112,7 @@ app.get('/', requireLogin, async (req, res) => {
     [familyId, accountId, fromStr, toStr]
   );
 
-  const categoriesSummaryRaw = catRows.map(row => ({
+  const categoriesSummaryRaw = catRows.map((row) => ({
     name: row.category_name,
     total: Number(row.total_spent || 0),
     color: row.color || '#cccccc',
@@ -123,7 +124,7 @@ app.get('/', requireLogin, async (req, res) => {
     0
   );
 
-    const categoriesSummary = categoriesSummaryRaw.map(row => ({
+  const categoriesSummary = categoriesSummaryRaw.map((row) => ({
     name: row.name,
     total: row.total,
     color: row.color,
@@ -134,18 +135,18 @@ app.get('/', requireLogin, async (req, res) => {
         : 0,
   }));
 
-  res.render('index', {
+    res.render('dashboard/index', {
     user,
     balance,
     income,
-    expense,             // всё ещё отрицательное, обработаем в шаблоне
+    expense,
     categoriesSummary,
     totalExpensesAbs,
+    activePage: 'dashboard',
   });
 });
 
-
-// Регистрация
+// ---------- Регистрация ----------
 app.get('/register', (req, res) => {
   res.render('register', { message: null });
 });
@@ -161,7 +162,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Логин
+// ---------- Логин ----------
 app.get('/login', (req, res) => {
   res.render('login', { message: null });
 });
@@ -178,13 +179,12 @@ app.post('/login', async (req, res) => {
   res.redirect('/');
 });
 
-// Логаут
+// ---------- Логаут ----------
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/login');
   });
 });
-
 
 // ============ ТРАНЗАКЦИИ ============
 
@@ -213,7 +213,8 @@ app.get('/transactions', requireLogin, async (req, res) => {
   // категории семьи (и общие)
   const [catRows] = await pool.execute(
     `
-    SELECT * FROM categories
+    SELECT *
+    FROM categories
     WHERE family_id = ? OR family_id IS NULL
     ORDER BY name ASC
     `,
@@ -222,13 +223,17 @@ app.get('/transactions', requireLogin, async (req, res) => {
 
   // транзакции
   let query = `
-  SELECT t.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon
-  FROM transactions t
-  JOIN categories c ON c.id = t.category_id
-  WHERE t.family_id = ?
-    AND t.account_id = ?
-    AND t.date BETWEEN ? AND ?
-`;
+    SELECT
+      t.*,
+      c.name  AS category_name,
+      c.color AS category_color,
+      c.icon  AS category_icon
+    FROM transactions t
+    JOIN categories c ON c.id = t.category_id
+    WHERE t.family_id = ?
+      AND t.account_id = ?
+      AND t.date BETWEEN ? AND ?
+  `;
   const params = [familyId, accountId, fromDate, toDate];
 
   if (category_id && category_id !== 'all') {
@@ -240,7 +245,7 @@ app.get('/transactions', requireLogin, async (req, res) => {
 
   const [txRows] = await pool.execute(query, params);
 
-  res.render('transactions', {
+  res.render('transactions/index', {
     user,
     transactions: txRows,
     categories: catRows,
@@ -249,6 +254,7 @@ app.get('/transactions', requireLogin, async (req, res) => {
       to: toDate,
       category_id: category_id || 'all',
     },
+    activePage: 'transactions',
   });
 });
 
@@ -267,10 +273,11 @@ app.post('/transactions', requireLogin, async (req, res) => {
     value = -value;
   }
 
+  // пока у тебя в форме обычный текст, но логика ниже оставлена
   const whoValue =
     who === 'me' || who === 'girlfriend' || who === 'shared'
       ? who
-      : 'shared';
+      : (who || 'shared');
 
   await pool.execute(
     `
@@ -284,32 +291,38 @@ app.post('/transactions', requireLogin, async (req, res) => {
   res.redirect('/transactions');
 });
 
-
-
 // ============ КАТЕГОРИИ ============
 
 // Страница категорий
+// ---------- КАТЕГОРИИ: список ----------
 app.get('/categories', requireLogin, async (req, res) => {
   const user = req.user;
   const userId = user.id;
 
   const familyId = await getUserFamilyId(userId);
 
-  // Берём общие категории (family_id IS NULL) и категории этой семьи
+  // Берём общие категории (family_id IS NULL) и категории этой семьи,
+  // но исключаем те базовые, которые семья "спрятала" в hidden_categories
   const [rows] = await pool.execute(
     `
     SELECT *
     FROM categories
-    WHERE family_id IS NULL OR family_id = ?
-    ORDER BY type DESC, name ASC
+    WHERE (family_id IS NULL OR family_id = ?)
+      AND id NOT IN (
+        SELECT category_id
+        FROM hidden_categories
+        WHERE family_id = ?
+      )
+    ORDER BY id ASC
     `,
-    [familyId]
+    [familyId, familyId]
   );
 
-  res.render('categories', {
+  res.render('categories/index', {
     user,
     categories: rows,
     message: null,
+    activePage: 'categories',
   });
 });
 
@@ -330,11 +343,10 @@ app.post('/categories', requireLogin, async (req, res) => {
     return res.redirect('/categories');
   }
 
-  // 🔒 Проверяем, есть ли уже ТАКАЯ категория (имя+тип) либо общая, либо семейная
+  // Проверяем, существует ли уже категория
   const [existing] = await pool.execute(
     `
-    SELECT id
-    FROM categories
+    SELECT id FROM categories
     WHERE (family_id IS NULL OR family_id = ?)
       AND name = ?
       AND type = ?
@@ -344,11 +356,26 @@ app.post('/categories', requireLogin, async (req, res) => {
   );
 
   if (existing.length > 0) {
-    // Категория уже есть (либо базовая, либо своя) — просто не создаём вторую
-    // Можно потом добавить сообщение пользователю, пока просто редирект
-    return res.redirect('/categories');
+    // Загружаем категории, чтобы отрисовать страницу корректно
+    const [rows] = await pool.execute(
+      `
+      SELECT *
+      FROM categories
+      WHERE family_id IS NULL OR family_id = ?
+      ORDER BY id ASC
+      `,
+      [familyId]
+    );
+
+    return res.render('categories/index', {
+      user,
+      categories: rows,
+      message: `Категория "${name}" уже существует.`,
+      activePage: 'categories',
+    });
   }
 
+  // Создание категории
   await pool.execute(
     `
     INSERT INTO categories (family_id, name, type, color, icon)
@@ -360,8 +387,7 @@ app.post('/categories', requireLogin, async (req, res) => {
   res.redirect('/categories');
 });
 
-
-// Обновление категории (Только своих)
+// ---------- КАТЕГОРИИ: обновление ----------
 app.post('/categories/update', requireLogin, async (req, res) => {
   const user = req.user;
   const userId = user.id;
@@ -382,7 +408,7 @@ app.post('/categories/update', requireLogin, async (req, res) => {
     return res.redirect('/categories');
   }
 
-  // 🔒 Проверяем, не превращаем ли мы эту категорию в дубль другой
+  // Проверяем, не превращаем ли в дубль другой категории (имя+тип)
   const [existing] = await pool.execute(
     `
     SELECT id
@@ -397,10 +423,31 @@ app.post('/categories/update', requireLogin, async (req, res) => {
   );
 
   if (existing.length > 0) {
-    // Уже есть другая категория с таким же именем+типом
-    return res.redirect('/categories');
+    // Загружаем категории с учётом hidden_categories, чтобы корректно отрисовать страницу
+    const [rows] = await pool.execute(
+      `
+      SELECT *
+      FROM categories
+      WHERE (family_id IS NULL OR family_id = ?)
+        AND id NOT IN (
+          SELECT category_id
+          FROM hidden_categories
+          WHERE family_id = ?
+        )
+      ORDER BY id ASC
+      `,
+      [familyId, familyId]
+    );
+
+    return res.render('categories/index', {
+      user,
+      categories: rows,
+      message: `Категория с именем "${name}" уже существует.`,
+      activePage: 'categories',
+    });
   }
 
+  // Обновляем категорию
   await pool.execute(
     `
     UPDATE categories
@@ -414,7 +461,7 @@ app.post('/categories/update', requireLogin, async (req, res) => {
 });
 
 
-// Удаление категории (Только своих)
+// ---------- КАТЕГОРИИ: удаление ----------
 app.post('/categories/delete', requireLogin, async (req, res) => {
   const user = req.user;
   const userId = user.id;
@@ -424,7 +471,20 @@ app.post('/categories/delete', requireLogin, async (req, res) => {
   if (!id) return res.redirect('/categories');
 
   try {
-    // 1) Сначала удаляем все транзакции этой семьи с этой категорией
+    // Узнаём, чья это категория
+    const [rows] = await pool.execute(
+      'SELECT id, family_id FROM categories WHERE id = ? LIMIT 1',
+      [id]
+    );
+
+    if (rows.length === 0) {
+      // Ничего не нашли — просто назад
+      return res.redirect('/categories');
+    }
+
+    const category = rows[0];
+
+    // Сначала ВСЕГДА чистим транзакции этой семьи по этой категории
     await pool.execute(
       `
       DELETE FROM transactions
@@ -433,14 +493,25 @@ app.post('/categories/delete', requireLogin, async (req, res) => {
       [familyId, id]
     );
 
-    // 2) Потом удаляем категорию
-    await pool.execute(
-      `
-      DELETE FROM categories
-      WHERE id = ? AND family_id = ?
-      `,
-      [id, familyId]
-    );
+    if (category.family_id === familyId) {
+      // Своя семейная категория — реально удаляем из categories
+      await pool.execute(
+        `
+        DELETE FROM categories
+        WHERE id = ? AND family_id = ?
+        `,
+        [id, familyId]
+      );
+    } else {
+      // Базовая (общая) категория — просто "прячем" для этой семьи
+      await pool.execute(
+        `
+        INSERT IGNORE INTO hidden_categories (family_id, category_id)
+        VALUES (?, ?)
+        `,
+        [familyId, id]
+      );
+    }
 
     res.redirect('/categories');
   } catch (err) {
@@ -448,9 +519,6 @@ app.post('/categories/delete', requireLogin, async (req, res) => {
     res.status(500).send('Ошибка при удалении категории.');
   }
 });
-
-
-// ============ КОНЕЦ КАТЕГОРИЙ ============
 
 
 // ============ ОЧИСТКА ДАННЫХ СЕМЬИ ============
@@ -465,19 +533,20 @@ app.post('/reset-data', requireLogin, async (req, res) => {
   }
 
   try {
-    // Сначала удаляем ВСЕ транзакции семьи
-    await pool.execute(
-      'DELETE FROM transactions WHERE family_id = ?',
-      [familyId]
-    );
+    // 1) Удаляем ВСЕ транзакции семьи
+    await pool.execute('DELETE FROM transactions WHERE family_id = ?', [
+      familyId,
+    ]);
 
-    // Потом удаляем пользовательские категории семьи
-    await pool.execute(
-      'DELETE FROM categories WHERE family_id = ?',
-      [familyId]
-    );
+    // 2) Удаляем пользовательские категории семьи
+    await pool.execute('DELETE FROM categories WHERE family_id = ?', [
+      familyId,
+    ]);
 
-    // При желании можно сюда же добавить очистку других таблиц, если появятся
+    // 3) Сбрасываем скрытые базовые категории — после ресета они снова будут видны
+    await pool.execute('DELETE FROM hidden_categories WHERE family_id = ?', [
+      familyId,
+    ]);
 
     res.redirect('/');
   } catch (err) {
@@ -487,7 +556,6 @@ app.post('/reset-data', requireLogin, async (req, res) => {
 });
 
 // ==============================================
-
 
 const PORT = 3000;
 app.listen(PORT, () => {

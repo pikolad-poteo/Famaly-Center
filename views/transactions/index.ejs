@@ -1,0 +1,67 @@
+<%- include('../partials/header', { user, activePage: 'transactions' }) %>
+
+<h2 class="mb-3">Транзакции</h2>
+
+<div class="row">
+  <!-- Узкая колонка слева: добавление транзакции -->
+  <div class="col-lg-4 col-md-5 mb-4">
+    <%- include('_form_new', { categories, filters }) %>
+  </div>
+
+  <!-- Широкая колонка справа: сверху фильтры, сразу под ними таблица -->
+  <div class="col-lg-8 col-md-7 mb-4">
+    <%- include('_filters', { categories, filters }) %>
+
+    <div class="mt-3">
+      <%- include('_table', { transactions }) %>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initCategoryPicker(pickerId, inputId, initialValue) {
+    const picker = document.getElementById(pickerId);
+    const input  = document.getElementById(inputId);
+    if (!picker || !input) return;
+
+    function setActive(id) {
+      input.value = id;
+      const buttons = picker.querySelectorAll('.category-option');
+      buttons.forEach(btn => {
+        if (btn.getAttribute('data-id') === String(id)) {
+          btn.classList.add('category-option-active');
+        } else {
+          btn.classList.remove('category-option-active');
+        }
+      });
+    }
+
+    picker.addEventListener('click', function(e) {
+      const btn = e.target.closest('.category-option');
+      if (!btn) return;
+      const id = btn.getAttribute('data-id');
+      setActive(id);
+    });
+
+    setActive(initialValue || input.value || 'all');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Пикер категорий для добавления транзакции
+    initCategoryPicker(
+      'tx-category-picker',
+      'tx-category-id-input',
+      document.getElementById('tx-category-id-input')?.value
+    );
+
+    // Пикер категорий для фильтра
+    const filterInitial = <%- JSON.stringify(filters.category_id || 'all') %>;
+    initCategoryPicker(
+      'filter-category-picker',
+      'filter-category-id-input',
+      filterInitial
+    );
+  });
+</script>
+
+<%- include('../partials/footer') %>

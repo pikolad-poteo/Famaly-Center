@@ -1,0 +1,92 @@
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title mb-3">Доходы</h5>
+
+    <% if (incomeCategories.length === 0) { %>
+      <p class="text-muted mb-0">Доходных категорий пока нет.</p>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0 categories-table" data-type="income">
+          <thead class="table-light">
+            <tr>
+              <th class="text-nowrap sortable" data-sort-key="id">№</th>
+              <th class="sortable" data-sort-key="name">Название</th>
+              <th>Цвет</th>
+              <th>Иконка</th>
+              <th class="text-nowrap">Источник</th>
+              <th class="text-end">Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% incomeCategories.forEach(function(c, index) { %>
+              <tr id="row-<%= c.id %>">
+                <!-- Порядковый номер: 1..N -->
+                <td class="text-muted small"><%= index + 1 %></td>
+
+                <td><%= c.name %></td>
+
+                <td>
+                  <span
+                    class="rounded-circle d-inline-block border"
+                    style="width:20px;height:20px;background:<%= c.color || '#cccccc' %>;"
+                  ></span>
+                </td>
+
+                <td>
+                  <i class="bi <%= c.icon || 'bi-tag' %> fs-5"></i>
+                </td>
+
+                <td>
+                  <% if (c.family_id) { %>
+                    <span class="badge bg-primary-subtle text-primary">Своя</span>
+                  <% } else { %>
+                    <span class="badge bg-secondary-subtle text-secondary">Общая</span>
+                  <% } %>
+                </td>
+
+                <td class="text-end text-nowrap">
+                  <!-- Редактировать -->
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm me-1"
+                    onclick="editCategory(<%= c.id %>)"
+                    title="Редактировать категорию"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+
+                  <!-- Удалить -->
+                  <form
+                    method="POST"
+                    action="/categories/delete"
+                    class="d-inline"
+                    onsubmit="return confirm('Удалить категорию «<%= c.name %>» и все её транзакции для этой семьи?');"
+                  >
+                    <input type="hidden" name="id" value="<%= c.id %>">
+                    <button
+                      type="submit"
+                      class="btn btn-outline-danger btn-sm"
+                      title="Удалить категорию"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+
+              <!-- строка с формой редактирования -->
+              <tr id="edit-<%= c.id %>" style="display:none;" class="table-active">
+                <td colspan="6">
+                  <%- include('_form_edit', {
+                    category: c,
+                    iconOptions: iconOptions
+                  }) %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>

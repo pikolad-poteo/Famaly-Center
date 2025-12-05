@@ -1,0 +1,101 @@
+<form
+  method="POST"
+  action="/categories/update"
+  class="category-edit-form bg-light rounded-3 p-3"
+>
+  <input type="hidden" name="id" value="<%= category.id %>">
+
+  <div class="row g-3 align-items-start">
+    <!-- Левая колонка: название + тип + цвет -->
+    <div class="col-md-4 col-lg-3">
+      <div class="mb-2">
+        <label class="form-label mb-1">Название</label>
+        <input
+          type="text"
+          name="name"
+          class="form-control form-control-sm"
+          value="<%- category.name %>"
+          required
+        >
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label mb-1">Тип</label>
+        <select
+          name="type"
+          class="form-select form-select-sm"
+        >
+          <option value="expense" <%= category.type === 'expense' ? 'selected' : '' %>>
+            Расход
+          </option>
+          <option value="income" <%= category.type === 'income' ? 'selected' : '' %>>
+            Доход
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label mb-1">Цвет</label>
+        <input
+          type="color"
+          name="color"
+          class="form-control form-control-color form-control-sm"
+          style="max-width: 60px;"
+          value="<%= category.color || '#cccccc' %>"
+        >
+      </div>
+    </div>
+
+    <!-- Средняя колонка: выбор иконки -->
+    <div class="col-md-6 col-lg-7">
+      <label class="form-label mb-1 d-flex justify-content-between align-items-center">
+        <span>Иконка</span>
+        <span class="text-muted small">нажми, чтобы выбрать</span>
+      </label>
+
+      <!-- скрытый input с выбранной иконкой -->
+      <input
+        type="hidden"
+        name="icon"
+        id="icon-input-<%= category.id %>"
+        value="<%= category.icon || 'bi-tag' %>"
+      >
+
+      <div
+        id="icon-picker-<%= category.id %>"
+        class="icon-picker border rounded-3 p-2"
+        style="max-height: 210px; overflow-y: auto;"
+      >
+        <% iconOptions.forEach(function(icon) { %>
+          <button
+            type="button"
+            class="icon-option btn btn-light btn-sm"
+            data-icon="<%= icon.value %>"
+            title="<%= icon.label %>"
+          >
+            <i class="bi <%= icon.value %>"></i>
+            <span class="visually-hidden"><%= icon.label %></span>
+          </button>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Правая колонка: кнопки -->
+    <div class="col-md-2 col-lg-2 d-flex flex-column align-items-end justify-content-between gap-2">
+      <div class="d-none d-md-block"></div> <!-- просто чтобы кнопки были внизу -->
+
+      <div class="d-flex flex-row flex-md-column gap-2">
+        <button type="submit" class="btn btn-success btn-sm">
+          Сохранить
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm"
+          onclick="cancelEdit(<%= category.id %>)"
+        >
+          Отмена
+        </button>
+      </div>
+    </div>
+  </div>
+</form>

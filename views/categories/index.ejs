@@ -1,0 +1,278 @@
+<%
+  // Набор иконок для категорий
+  const iconOptions = [
+    // БАЗОВЫЕ
+    { value: 'bi-tag', label: 'Другое' },
+    { value: 'bi-bookmark', label: 'Общее' },
+
+    // ПОКУПКИ
+    { value: 'bi-cart', label: 'Продукты / покупки' },
+    { value: 'bi-basket', label: 'Магазин' },
+    { value: 'bi-bag', label: 'Одежда' },
+    { value: 'bi-bag-heart', label: 'Красивые покупки' },
+    { value: 'bi-bag-plus', label: 'Другое + покупки' },
+
+    // ЕДА И КАФЕ
+    { value: 'bi-cup-hot', label: 'Кафе / кофе' },
+    { value: 'bi-egg-fried', label: 'Еда' },
+    { value: 'bi-emoji-smile', label: 'Перекус / настроение' },
+    { value: 'bi-emoji-heart-eyes', label: 'Любимое / вкусняшки' },
+    { value: 'bi-cup-straw', label: 'Напитки' },
+    { value: 'bi-basket3', label: 'Продуктовая корзина' },
+    { value: 'bi-cake2', label: 'Торты / сладкое' },
+    { value: 'bi-cookie', label: 'Печенье / выпечка' },
+
+    // КРАСОТА / УХОД
+    { value: 'bi-brush', label: 'Уход / косметика' },
+    { value: 'bi-scissors', label: 'Парикмахерская' },
+    { value: 'bi-heart', label: 'Здоровье и уход' },
+    { value: 'bi-stars', label: 'Спа / процедуры' },
+
+    // ЖИВОТНЫЕ
+    { value: 'bi-bug', label: 'Питомцы / насекомые' },
+    { value: 'bi-flower1', label: 'Цветы / растения' },
+    { value: 'bi-suit-heart-fill', label: 'Животные / уход' },
+    { value: 'bi-emoji-sunglasses', label: 'Гулять с питомцем' },
+    { value: 'bi-github', label: 'Домашнее животное' },
+
+    // ДОМ / БЫТ
+    { value: 'bi-house-door', label: 'Жильё / аренда' },
+    { value: 'bi-building', label: 'Коммуналка / дом' },
+    { value: 'bi-lightning-charge', label: 'Электричество' },
+    { value: 'bi-droplet', label: 'Вода' },
+    { value: 'bi-wifi', label: 'Интернет' },
+    { value: 'bi-fire', label: 'Отопление' },
+    { value: 'bi-lamp', label: 'Освещение' },
+    { value: 'bi-hammer', label: 'Ремонт' },
+    { value: 'bi-box-seam', label: 'Хранение / коробки' },
+
+    // ТРАНСПОРТ
+    { value: 'bi-fuel-pump', label: 'Топливо' },
+    { value: 'bi-car-front', label: 'Машина' },
+    { value: 'bi-bus-front', label: 'Общественный транспорт' },
+    { value: 'bi-bicycle', label: 'Велосипед' },
+    { value: 'bi-rocket-takeoff', label: 'Доставки' },
+    { value: 'bi-fuel-pump', label: 'Топливо / заправка' },
+
+    // ПУТЕШЕСТВИЯ
+    { value: 'bi-airplane', label: 'Путешествия' },
+    { value: 'bi-train-front', label: 'Поезд' },
+    { value: 'bi-geo-alt', label: 'Локации / поездки' },
+    { value: 'bi-suitcase', label: 'Багаж / отпуск' },
+
+    // ЗДОРОВЬЕ
+    { value: 'bi-heart-pulse', label: 'Здоровье' },
+    { value: 'bi-capsule-pill', label: 'Лекарства' },
+    { value: 'bi-bandaid', label: 'Аптечка' },
+    { value: 'bi-activity', label: 'Фитнес / занятия' },
+
+    // РАБОТА И ФИНАНСЫ
+    { value: 'bi-briefcase', label: 'Работа' },
+    { value: 'bi-mortarboard', label: 'Учёба' },
+    { value: 'bi-laptop', label: 'Техника' },
+    { value: 'bi-cash-stack', label: 'Наличные' },
+    { value: 'bi-credit-card', label: 'Карта / банк' },
+    { value: 'bi-piggy-bank', label: 'Сбережения' },
+    { value: 'bi-cash-coin', label: 'Доход / зарплата' },
+    { value: 'bi-currency-exchange', label: 'Обмен валют' },
+    { value: 'bi-cash-stack', label: 'Пачка денег' },
+
+    // РАЗВЛЕЧЕНИЯ
+    { value: 'bi-controller', label: 'Игры' },
+    { value: 'bi-music-note-beamed', label: 'Музыка' },
+    { value: 'bi-film', label: 'Кино' },
+    { value: 'bi-camera', label: 'Фото / творчество' },
+    { value: 'bi-stars', label: 'Творчество / хобби' },
+    { value: 'bi-balloon', label: 'Праздники' },
+    { value: 'bi-gift', label: 'Подарки' },
+    { value: 'bi-joystick', label: 'Консольные игры' },
+    { value: 'bi-controller', label: 'Игры / развлечения' },
+
+    // СПОРТ
+    { value: 'bi-trophy', label: 'Спорт' },
+    { value: 'bi-bicycle', label: 'Велоспорт' },
+    { value: 'bi-person-walking', label: 'Прогулки' },
+    { value: 'bi-stopwatch', label: 'Тренировки' },
+
+    // ЭМОЦИИ
+    { value: 'bi-emoji-smile', label: 'Настроение' },
+    { value: 'bi-emoji-laughing', label: 'Веселье' },
+    { value: 'bi-emoji-wink', label: 'Сюрпризы' },
+    { value: 'bi-emoji-angry', label: 'Непредвиденные расходы' },
+
+    // ВРАЩЕНИЯ / АБСТРАКЦИЯ
+    { value: 'bi-cloud', label: 'Онлайн услуги' },
+    { value: 'bi-lightbulb', label: 'Идеи / творчество' },
+    { value: 'bi-lock', label: 'Безопасность' },
+    { value: 'bi-gear', label: 'Настройки / сервис' },
+
+  ];
+
+  const expenseCategories = categories.filter(c => c.type === 'expense');
+  const incomeCategories  = categories.filter(c => c.type === 'income');
+%>
+
+<%- include('../partials/header', { user }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Категории</h2>
+  <% if (message) { %>
+    <div class="alert alert-danger">
+        <%= message %>
+      </div>
+    <% } %>
+  <span class="text-muted small">Всего: <%= categories.length %></span>
+</div>
+
+<div class="row">
+  <div class="col-md-4 mb-4">
+    <%- include('_form_new', { iconOptions }) %>
+  </div>
+
+  <div class="col-md-8 mb-4">
+    <%- include('_table_expenses', { expenseCategories, iconOptions }) %>
+    <%- include('_table_income',   { incomeCategories,  iconOptions }) %>
+  </div>
+</div>
+
+<script>
+  // Показываем форму редактирования
+  function editCategory(id) {
+    const row      = document.getElementById('row-' + id);
+    const editRow  = document.getElementById('edit-' + id);
+    if (!row || !editRow) return;
+
+    row.style.display     = 'none';
+    editRow.style.display = 'table-row';
+  }
+
+  // Прячем форму редактирования
+  function cancelEdit(id) {
+    const row      = document.getElementById('row-' + id);
+    const editRow  = document.getElementById('edit-' + id);
+    if (!row || !editRow) return;
+
+    row.style.display     = '';
+    editRow.style.display = 'none';
+  }
+
+  // Инициализация выбора иконок
+  function initIconPicker(pickerId, inputId, initialValue) {
+    const picker = document.getElementById(pickerId);
+    const input  = document.getElementById(inputId);
+    if (!picker || !input) return;
+
+    function setActive(iconClass) {
+      input.value = iconClass;
+      const buttons = picker.querySelectorAll('.icon-option');
+      buttons.forEach(btn => {
+        if (btn.getAttribute('data-icon') === iconClass) {
+          btn.classList.add('icon-option-active');
+        } else {
+          btn.classList.remove('icon-option-active');
+        }
+      });
+    }
+
+    picker.addEventListener('click', function (e) {
+      const btn = e.target.closest('.icon-option');
+      if (!btn) return;
+      const iconClass = btn.getAttribute('data-icon');
+      setActive(iconClass);
+    });
+
+    setActive(initialValue || input.value || 'bi-tag');
+  }
+
+  // Сортировка таблиц категорий (по ID или по названию)
+  function initCategorySorting() {
+    const tables = document.querySelectorAll('.categories-table');
+    tables.forEach(table => {
+      const sortableHeaders = table.querySelectorAll('th.sortable');
+      sortableHeaders.forEach(th => {
+        th.style.cursor = 'pointer';
+        th.addEventListener('click', () => {
+          const sortKey = th.dataset.sortKey; // 'id' или 'name'
+          sortCategoryTable(table, sortKey);
+        });
+      });
+    });
+  }
+
+  function sortCategoryTable(table, key) {
+    const tbody = table.tBodies[0];
+    if (!tbody) return;
+
+    // Собираем пары: видимая строка + строка редактирования
+    const dataRows = Array.from(tbody.querySelectorAll('tr[id^="row-"]'));
+    const groups = dataRows.map(row => {
+      const match = row.id.match(/^row-(\d+)/);
+      const id = match ? parseInt(match[1], 10) : 0;
+      const editRow = document.getElementById('edit-' + id);
+
+      let value;
+      if (key === 'id') {
+        value = id;
+      } else if (key === 'name') {
+        // Вторая колонка — название
+        const nameCell = row.querySelector('td:nth-child(2)');
+        value = nameCell ? nameCell.textContent.trim().toLowerCase() : '';
+      } else {
+        value = '';
+      }
+
+      return { id, row, editRow, value };
+    });
+
+    // Запоминаем состояние сортировки в самом table
+    const state = table._sortState || { key: null, direction: 'asc' };
+    let direction = 'asc';
+    if (state.key === key) {
+      direction = state.direction === 'asc' ? 'desc' : 'asc';
+    }
+
+    groups.sort((a, b) => {
+      if (key === 'id') {
+        return direction === 'asc' ? a.value - b.value : b.value - a.value;
+      } else {
+        if (a.value < b.value) return direction === 'asc' ? -1 : 1;
+        if (a.value > b.value) return direction === 'asc' ? 1 : -1;
+        return 0;
+      }
+    });
+
+    // Перестроить tbody
+    tbody.innerHTML = '';
+    groups.forEach(g => {
+      tbody.appendChild(g.row);
+      if (g.editRow) {
+        tbody.appendChild(g.editRow);
+      }
+    });
+
+    table._sortState = { key, direction };
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Пикер для НОВОЙ категории
+    initIconPicker(
+      'icon-picker-new',
+      'icon-input-new',
+      document.getElementById('icon-input-new')?.value || 'bi-tag'
+    );
+
+    // Пикеры для РЕДАКТИРОВАНИЯ
+    <% categories.forEach(function(c) { %>
+      initIconPicker(
+        'icon-picker-<%= c.id %>',
+        'icon-input-<%= c.id %>',
+        '<%= (c.icon || "bi-tag").replace(/"/g, '&quot;') %>'
+      );
+    <% }) %>
+
+    // Сортировка по клику на заголовки
+    initCategorySorting();
+  });
+</script>
+
+<%- include('../partials/footer') %>

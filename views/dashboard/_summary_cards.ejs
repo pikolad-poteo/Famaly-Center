@@ -1,0 +1,34 @@
+<div class="row">
+  <div class="col-md-4 mb-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Текущий баланс</h5>
+        <p class="card-text fs-3">
+          <%= Number(balance || 0).toFixed(2) %> €
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Доходы (текущий месяц)</h5>
+        <p class="card-text fs-4 text-success">
+          <%= Number(income || 0).toFixed(2) %> €
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Расходы (текущий месяц)</h5>
+        <p class="card-text fs-4 text-danger">
+          <%= Math.abs(Number(expense || 0)).toFixed(2) %> €
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

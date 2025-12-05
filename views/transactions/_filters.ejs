@@ -1,0 +1,82 @@
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title mb-3">Фильтры</h5>
+
+    <form method="GET" action="/transactions">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">С даты</label>
+          <input
+            type="date"
+            name="from"
+            value="<%= filters.from || '' %>"
+            class="form-control"
+          >
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">По дату</label>
+          <input
+            type="date"
+            name="to"
+            value="<%= filters.to || '' %>"
+            class="form-control"
+          >
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label d-flex justify-content-between align-items-center">
+            <span>Категория</span>
+            <span class="text-muted small">для поиска</span>
+          </label>
+
+          <input
+            type="hidden"
+            name="category_id"
+            id="filter-category-id-input"
+            value="<%= filters.category_id || 'all' %>"
+          >
+
+          <div id="filter-category-picker" class="category-picker border rounded-3 p-2">
+            <!-- Опция "Все категории" -->
+            <button
+              type="button"
+              class="category-option btn btn-light btn-sm"
+              data-id="all"
+              title="Все категории"
+            >
+              <span class="category-color" style="background: #e9ecef;"></span>
+              <i class="bi bi-ui-checks-grid me-1"></i>
+              <span class="category-name">Все категории</span>
+            </button>
+
+            <% categories.forEach(c => { %>
+              <button
+                type="button"
+                class="category-option btn btn-light btn-sm"
+                data-id="<%= c.id %>"
+                title="<%= c.name %>"
+              >
+                <span
+                  class="category-color"
+                  style="background:<%= c.color || '#cccccc' %>;"
+                ></span>
+                <i class="bi <%= c.icon || 'bi-tag' %> me-1"></i>
+                <span class="category-name"><%= c.name %></span>
+              </button>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end mt-2">
+          <button type="submit" class="btn btn-outline-primary me-2">
+            Применить
+          </button>
+          <a href="/transactions" class="btn btn-outline-secondary">
+            Сбросить
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

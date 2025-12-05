@@ -1,33 +1,59 @@
-<%- include('layout', {
-  user: null,
-  body: `
-    <div class="row justify-content-center">
-      <div class="col-md-4">
-        <h2 class="mb-3">Регистрация</h2>
+<%- include('partials/header', { user: null }) %>
+
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title mb-3 text-center">Регистрация</h3>
+
+        <% if (typeof message !== 'undefined' && message) { %>
+          <div class="alert alert-danger">
+            <%= message %>
+          </div>
+        <% } %>
 
         <form method="POST" action="/register">
           <div class="mb-3">
             <label class="form-label">Имя</label>
-            <input type="text" name="name" class="form-control" required>
+            <input
+              type="text"
+              name="name"
+              class="form-control"
+              required
+            >
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" required>
+            <label class="form-label">E-mail</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              required
+            >
           </div>
 
           <div class="mb-3">
             <label class="form-label">Пароль</label>
-            <input type="password" name="password" class="form-control" required>
+            <input
+              type="password"
+              name="password"
+              class="form-control"
+              required
+            >
           </div>
 
-          <button type="submit" class="btn btn-success w-100">Создать аккаунт</button>
+          <button type="submit" class="btn btn-success w-100 mb-2">
+            Зарегистрироваться
+          </button>
 
-          ${message ? `
-            <div class="alert alert-danger mt-3">${message}</div>
-          ` : ''}
+          <div class="text-center">
+            <a href="/login" class="small">Уже есть аккаунт? Войти</a>
+          </div>
         </form>
       </div>
     </div>
-  `
-}) %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

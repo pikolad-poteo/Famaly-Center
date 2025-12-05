@@ -1,28 +1,49 @@
-<%- include('layout', {
-  user: null,
-  body: `
-    <div class="row justify-content-center">
-      <div class="col-md-4">
-        <h2 class="mb-3">Вход</h2>
+<%- include('partials/header', { user: null }) %>
+
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title mb-3 text-center">Вход</h3>
+
+        <% if (typeof message !== 'undefined' && message) { %>
+          <div class="alert alert-danger">
+            <%= message %>
+          </div>
+        <% } %>
 
         <form method="POST" action="/login">
           <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" required>
+            <label class="form-label">E-mail</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              required
+            >
           </div>
 
           <div class="mb-3">
             <label class="form-label">Пароль</label>
-            <input type="password" name="password" class="form-control" required>
+            <input
+              type="password"
+              name="password"
+              class="form-control"
+              required
+            >
           </div>
 
-          <button type="submit" class="btn btn-primary w-100">Войти</button>
+          <button type="submit" class="btn btn-primary w-100 mb-2">
+            Войти
+          </button>
 
-          ${message ? `
-            <div class="alert alert-danger mt-3">${message}</div>
-          ` : ''}
+          <div class="text-center">
+            <a href="/register" class="small">Нет аккаунта? Зарегистрироваться</a>
+          </div>
         </form>
       </div>
     </div>
-  `
-}) %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
